@@ -19,6 +19,14 @@ describe("test the recipes API", () => {
       username: "admin",
       password,
     });
+
+    const user = {
+      username: "admin",
+      password: "okay",
+    };
+    const res = await request(app).post("/login").send(user);
+
+    token = res.body.accessToken;
   });
 
   afterAll(async () => {
@@ -62,6 +70,7 @@ describe("test the recipes API", () => {
         })
       );
     });
+
     it("it should not save new user to db,empty name field", async () => {
       // DATA YOU WANT TO SAVE TO DB
       const recipe = {
@@ -77,6 +86,7 @@ describe("test the recipes API", () => {
         })
       );
     });
+
     it("it should not save new recipe to db,invalid difficulty field", async () => {
       // DATA YOU WANT TO SAVE TO DB
       const recipe = {
@@ -141,6 +151,7 @@ describe("test the recipes API", () => {
         })
       );
     });
+
     it("it should not retrieve any recipe from db, internal server error", async () => {
       jest.spyOn(RecipeService, "allRecipes").mockRejectedValueOnce(new Error());
       const res = await request(app).get("/recipes").send();
@@ -206,6 +217,7 @@ describe("test the recipes API", () => {
         })
       );
     });
+
     it("it should not update recipe in db,invalid difficulty value", async () => {
       // DATA YOU WANT TO UPDATE IN DB
       const recipe = {
@@ -276,7 +288,9 @@ describe("test the recipes API", () => {
     it("it should not update recipe in db, no update passed", async () => {
       // DATA YOU WANT UPDATE IN DB
       const recipes = {};
+
       const res = await request(app).patch(`/recipes/${id}`).send(recipes).set("Authorization", `Bearer ${token}`);
+      
       expect(res.statusCode).toEqual(400);
       expect(res.body).toEqual(
         expect.objectContaining({
@@ -285,13 +299,16 @@ describe("test the recipes API", () => {
         })
       );
     });
+
     it("it should not update recipe in db,internal server error", async () => {
       // DATA YOU WANT TO UPDATE IN DB
       const recipes = {
         name: "chicken nuggets",
       };
       jest.spyOn(RecipeService, "fetchByIdAndUpdate").mockRejectedValueOnce(new Error());
+      
       const res = await request(app).patch(`/recipes/${id}`).send(recipes).set("Authorization", ` Bearer ${token}`);
+      
       expect(res.statusCode).toEqual(500);
       expect(res.body).toEqual(
         expect.objectContaining({
@@ -306,6 +323,7 @@ describe("test the recipes API", () => {
   describe("DELETE /recipes/:id", () => {
     it("Delete the specified recipe", async () => {
       const res = await request(app).delete(`/recipes/${id}`).set("Authorization", `Bearer ${token}`);
+      
       expect(res.statusCode).toEqual(200);
       expect(res.body).toEqual(
         expect.objectContaining({
@@ -314,9 +332,10 @@ describe("test the recipes API", () => {
         })
       );
     });
-    
+
     it("Fail to delete the specified recipe, invalid token", async () => {
       const res = await request(app).delete(`/recipes/${id}`).set("Authorization", "Bearer dnsosuew8w9e729203332");
+      
       expect(res.statusCode).toEqual(403);
       expect(res.body).toEqual(
         expect.objectContaining({
@@ -327,7 +346,9 @@ describe("test the recipes API", () => {
 
     it("Fail to delete the specified recipe, internal server error", async () => {
       jest.spyOn(RecipeService, "fetchByIdAndDelete").mockRejectedValueOnce(new Error());
+      
       const res = await request(app).delete(`/recipes/${id}`).set("Authorization", `Bearer ${token}`);
+      
       expect(res.statusCode).toEqual(500);
       expect(res.body).toEqual(
         expect.objectContaining({
